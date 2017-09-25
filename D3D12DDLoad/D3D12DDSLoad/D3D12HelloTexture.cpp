@@ -289,16 +289,21 @@ void D3D12HelloTexture::LoadAssets()
 	// prematurely destroyed.
 	ComPtr<ID3D12Resource> textureUploadHeap;
 
-	// Create the texture.
+	// Load texture from DDS.
 	{
-
 		std::unique_ptr<uint8_t[]> ddsData;
 		std::vector<D3D12_SUBRESOURCE_DATA> subresouceData;
-		ThrowIfFailed(LoadDDSTextureFromFile(m_device.Get(), L"test.DDS",&m_texture, ddsData, subresouceData));
+		ThrowIfFailed(LoadDDSTextureFromFile(m_device.Get(),
+			L"test.DDS",
+			&m_texture, 
+			ddsData, 
+			subresouceData));
 		D3D12_RESOURCE_DESC textureDesc = m_texture->GetDesc();
 
-		const UINT subresoucesize = static_cast<UINT>(subresouceData.size());
-		const UINT64 uploadBufferSize = GetRequiredIntermediateSize(m_texture.Get(), 0, subresoucesize);
+		const UINT subresoucesize 
+				= static_cast<UINT>(subresouceData.size());	
+		const UINT64 uploadBufferSize 
+				= GetRequiredIntermediateSize(m_texture.Get(), 0, subresoucesize);
 
 		// Create the GPU upload buffer.
 		ThrowIfFailed(m_device->CreateCommittedResource(
@@ -309,8 +314,17 @@ void D3D12HelloTexture::LoadAssets()
 			nullptr,
 			IID_PPV_ARGS(&textureUploadHeap)));
 
-		UpdateSubresources(m_commandList.Get(), m_texture.Get(), textureUploadHeap.Get(), 0, 0, subresoucesize, &subresouceData[0]);
-		m_commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(m_texture.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+		UpdateSubresources(m_commandList.Get(), 
+			m_texture.Get(), 
+			textureUploadHeap.Get(),
+			0, 
+			0, 
+			subresoucesize, 
+			&subresouceData[0]);
+		m_commandList->ResourceBarrier(1, 
+			&CD3DX12_RESOURCE_BARRIER::Transition(m_texture.Get(), 
+			D3D12_RESOURCE_STATE_COPY_DEST,
+				D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
 
 		// Describe and create a SRV for the texture.
 		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -318,7 +332,9 @@ void D3D12HelloTexture::LoadAssets()
 		srvDesc.Format = textureDesc.Format;
 		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Texture2D.MipLevels = subresoucesize;
-		m_device->CreateShaderResourceView(m_texture.Get(), &srvDesc, m_srvHeap->GetCPUDescriptorHandleForHeapStart());
+		m_device->CreateShaderResourceView(m_texture.Get(), 
+			&srvDesc, 
+			m_srvHeap->GetCPUDescriptorHandleForHeapStart());
 	}
 	
 	// Close the command list and execute it to begin the initial GPU setup.
