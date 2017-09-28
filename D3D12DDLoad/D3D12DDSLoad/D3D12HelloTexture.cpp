@@ -335,6 +335,8 @@ void D3D12HelloTexture::LoadAssets()
 		m_device->CreateShaderResourceView(m_texture.Get(), 
 			&srvDesc, 
 			m_srvHeap->GetCPUDescriptorHandleForHeapStart());
+
+		m_commandList->DiscardResource(textureUploadHeap.Get(), nullptr);
 	}
 	
 	// Close the command list and execute it to begin the initial GPU setup.
